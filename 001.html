@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>彩球繞圈圈（帶呼吸與加速）</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #fce4ec);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .center {
+      width: 10px;
+      height: 10px;
+      background: #000;
+      border-radius: 50%;
+      position: absolute;
+      z-index: 2;
+    }
+
+    .rope {
+      width: 200px;
+      height: 2px;
+      background: #777;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: left center;
+      animation: rotate 6s linear infinite;
+    }
+
+    .ball {
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle at 30% 30%, #ff8a65, #d84315);
+      border-radius: 50%;
+      position: absolute;
+      top: -14px;
+      left: 200px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* 呼吸動畫 */
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
+      }
+    }
+
+    /* 預設角度旋轉動畫 */
+    @keyframes rotate {
+      from { transform: rotate(0deg) skewY(1deg); }
+      to   { transform: rotate(360deg) skewY(-1deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="center"></div>
+  <div class="rope" id="rope">
+    <div class="ball"></div>
+  </div>
+
+  <script>
+    const rope = document.getElementById("rope");
+
+    let speed = 6; // 預設秒數：6秒一圈
+    let isSpeeding = false;
+
+    function updateAnimation() {
+      rope.style.animationDuration = speed + "s";
+    }
+
+    // 左鍵點擊加速
+    document.addEventListener("mousedown", (e) => {
+      if (e.button === 0) {
+        if (!isSpeeding) {
+          speed = Math.max(1, speed - 1.5); // 加速旋轉（最快1秒）
+          updateAnimation();
+          isSpeeding = true;
+          setTimeout(() => {
+            speed = 6; // 回到正常速度
+            updateAnimation();
+            isSpeeding = false;
+          }, 1500);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
