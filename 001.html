@@ -2,16 +2,12 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>彩球繞圈圈（帶呼吸與加速）</title>
+  <title>多彩球繞圈圈</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: linear-gradient(135deg, #e0f7fa, #fce4ec);
+      background: linear-gradient(135deg, #79c1ca, #06e9c3);
       height: 100vh;
       overflow: hidden;
       display: flex;
@@ -28,25 +24,28 @@
       z-index: 2;
     }
 
-    .rope {
-      width: 200px;
-      height: 2px;
-      background: #777;
+    .orbit {
       position: absolute;
       top: 50%;
       left: 50%;
       transform-origin: left center;
-      animation: rotate 6s linear infinite;
+    }
+
+    .rope {
+      height: 2px;
+      background: #777;
+      position: absolute;
+      top: 50%;
+      left: 0;
+      transform-origin: left center;
     }
 
     .ball {
       width: 30px;
       height: 30px;
-      background: radial-gradient(circle at 30% 30%, #ff8a65, #d84315);
       border-radius: 50%;
       position: absolute;
       top: -14px;
-      left: 200px;
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -59,45 +58,85 @@
         transform: scale(1.2);
       }
     }
-
-    /* 預設角度旋轉動畫 */
-    @keyframes rotate {
-      from { transform: rotate(0deg) skewY(1deg); }
-      to   { transform: rotate(360deg) skewY(-1deg); }
-    }
   </style>
 </head>
 <body>
   <div class="center"></div>
-  <div class="rope" id="rope">
-    <div class="ball"></div>
-  </div>
 
   <script>
-    const rope = document.getElementById("rope");
+    const colors = [
+      ['#ff8a65', '#d84315'],
+      ['#81d4fa', '#0288d1'],
+      ['#aed581', '#558b2f'],
+      ['#f06292', '#ad1457'],
+      ['#ffd54f', '#f57f17']
+    ];
 
-    let speed = 6; // 預設秒數：6秒一圈
+    let speed = 6;
     let isSpeeding = false;
 
-    function updateAnimation() {
-      rope.style.animationDuration = speed + "s";
+    function createBallOrbit(index, radius, speedOffset) {
+      const orbit = document.createElement('div');
+      orbit.className = 'orbit';
+      orbit.style.width = radius + 'px';
+
+      // 動態加上旋轉動畫
+      const rotationTime = speed + speedOffset;
+      orbit.style.animation = `rotate-${index} ${rotationTime}s linear infinite`;
+
+      const rope = document.createElement('div');
+      rope.className = 'rope';
+      rope.style.width = radius + 'px';
+
+      const ball = document.createElement('div');
+      ball.className = 'ball';
+      ball.style.left = radius + 'px';
+
+      // 使用不同顏色漸層
+      const [startColor, endColor] = colors[index % colors.length];
+      ball.style.background = `radial-gradient(circle at 30% 30%, ${startColor}, ${endColor})`;
+
+      rope.appendChild(ball);
+      orbit.appendChild(rope);
+      document.body.appendChild(orbit);
+
+      // 加入動畫 keyframes
+      const styleSheet = document.styleSheets[0];
+      styleSheet.insertRule(`
+        @keyframes rotate-${index} {
+          0% { transform: rotate(0deg) skewY(1deg); }
+          100% { transform: rotate(360deg) skewY(-1deg); }
+        }
+      `, styleSheet.cssRules.length);
+
+      return { orbit, speedOffset, index };
     }
 
-    // 左鍵點擊加速
+    const orbits = [];
+    for (let i = 0; i < 5; i++) {
+      const orbit = createBallOrbit(i, 80 + i * 30, i * 0.5);
+      orbits.push(orbit);
+    }
+
+    // 點擊加速全部球
     document.addEventListener("mousedown", (e) => {
-      if (e.button === 0) {
-        if (!isSpeeding) {
-          speed = Math.max(1, speed - 1.5); // 加速旋轉（最快1秒）
-          updateAnimation();
-          isSpeeding = true;
-          setTimeout(() => {
-            speed = 6; // 回到正常速度
-            updateAnimation();
-            isSpeeding = false;
-          }, 1500);
-        }
+      if (e.button === 0 && !isSpeeding) {
+        isSpeeding = true;
+        orbits.forEach(({ orbit, index, speedOffset }) => {
+          const fastTime = Math.max(1, (speed - 2) + speedOffset);
+          orbit.style.animation = `rotate-${index} ${fastTime}s linear infinite`;
+        });
+
+        setTimeout(() => {
+          orbits.forEach(({ orbit, index, speedOffset }) => {
+            const normalTime = speed + speedOffset;
+            orbit.style.animation = `rotate-${index} ${normalTime}s linear infinite`;
+          });
+          isSpeeding = false;
+        }, 1500);
       }
     });
   </script>
 </body>
 </html>
+
